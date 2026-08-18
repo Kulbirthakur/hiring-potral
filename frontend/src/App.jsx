@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import Dashboard from './components/Dashboard';
 import PublicJobPortal from './components/PublicJobPortal';
 import CandidateModal from './components/CandidateModal';
-import { Briefcase, LayoutDashboard, UserPlus, Sun, Moon } from 'lucide-react';
+import LinkGeneratorModal from './components/LinkGeneratorModal';
+import { Briefcase, LayoutDashboard, UserPlus, Sun, Moon, Key } from 'lucide-react';
 import { getApiUrl, fetchJsonWithRetry, sanitizeError } from './apiConfig';
 
 export default function App() {
@@ -13,6 +14,23 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedCandidate, setSelectedCandidate] = useState(null);
+  const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
+  const [generatedLink, setGeneratedLink] = useState('');
+  const [isGeneratingLink, setIsGeneratingLink] = useState(false);
+
+  const handleGenerateLink = async () => {
+    setIsGeneratingLink(true);
+    try {
+      const data = await fetchJsonWithRetry(getApiUrl('/api/links/generate'), { method: 'POST' });
+      const liveLink = data.one_time_link || `${window.location.origin}/?view=apply&token=${data.token}`;
+      setGeneratedLink(liveLink);
+      setIsLinkModalOpen(true);
+    } catch (err) {
+      alert('Could not generate single-use link. Make sure backend is running.');
+    } finally {
+      setIsGeneratingLink(false);
+    }
+  };
 
   // Check if URL is public applicant view (/apply or ?view=apply or #apply)
   const isPublicOnly = 
@@ -186,6 +204,15 @@ export default function App() {
         </nav>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <button 
+            onClick={handleGenerateLink} 
+            disabled={isGeneratingLink}
+            className="btn-primary" 
+            style={{ padding: '0.5rem 1rem', fontSize: '0.85rem', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+            title="Generate Single-Use 1-Time Candidate Link"
+          >
+            <Key size={16} /> {isGeneratingLink ? 'Generating...' : '1-Time Link'}
+          </button>
           <button onClick={toggleTheme} className="btn-secondary" style={{ padding: '0.5rem 0.85rem' }} title="Toggle Theme">
             {theme === 'dark' ? <Sun size={18} color="#fbbf24" /> : <Moon size={18} color="#6366f1" />}
           </button>
@@ -236,6 +263,13 @@ export default function App() {
           onDeleteCandidate={handleDeleteCandidate}
         />
       )}
+
+      <LinkGeneratorModal 
+        isOpen={isLinkModalOpen}
+        onClose={() => setIsLinkModalOpen(false)}
+        linkType="single"
+        generatedLink={generatedLink}
+      />
     </div>
   );
 }
