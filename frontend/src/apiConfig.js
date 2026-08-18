@@ -13,22 +13,37 @@ export const getApiUrl = (path) => {
   return `${API_BASE_URL}${cleanPath}`;
 };
 
-// Helper to sanitize any technical JavaScript error text away from end users
+// Case-insensitive helper to sanitize ANY technical JavaScript error text away from end users
 export const sanitizeError = (err) => {
   const msg = typeof err === 'string' ? err : (err?.message || '');
+  const lower = msg.toLowerCase();
+
   if (
     !msg ||
-    msg.includes('doctype') ||
-    msg.includes('Unexpected token') ||
-    msg.includes('json') ||
-    msg.includes('Response') ||
-    msg.includes('SyntaxError') ||
-    msg.includes('TypeError') ||
-    msg.includes('<')
+    lower.includes('doctype') ||
+    lower.includes('unexpected') ||
+    lower.includes('json') ||
+    lower.includes('response') ||
+    lower.includes('syntaxerror') ||
+    lower.includes('typeerror') ||
+    lower.includes('failed to execute') ||
+    lower.includes('fetch') ||
+    lower.includes('<')
   ) {
     return 'Connecting to cloud database server... Please wait a moment.';
   }
   return msg;
+};
+
+// Safe JSON parser that never throws syntax or JSON input errors
+export const safeParseJson = async (response) => {
+  const text = await response.text();
+  if (!text || !text.trim()) return {};
+  try {
+    return JSON.parse(text);
+  } catch (e) {
+    return {};
+  }
 };
 
 // Robust fetch helper with 6 auto-retries (30s window) for Render free tier cold starts
@@ -54,12 +69,13 @@ export const fetchJsonWithRetry = async (url, options = {}, maxRetries = 6, dela
         throw new Error('Connecting to cloud database server... Please wait a moment.');
       }
 
+      const data = await safeParseJson(response);
+
       if (!response.ok) {
-        const errJson = await response.json().catch(() => ({}));
-        throw new Error(errJson.error || 'Connecting to cloud database server... Please wait a moment.');
+        throw new Error(data.error || 'Connecting to cloud database server... Please wait a moment.');
       }
 
-      return await response.json();
+      return data;
     } catch (err) {
       lastError = err;
       if (attempt < maxRetries) {
