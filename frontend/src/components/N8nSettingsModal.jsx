@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, Zap, Send, CheckCircle, HelpCircle, Code, Server, ArrowRight } from 'lucide-react';
+import { getApiUrl } from '../apiConfig';
 
 export default function N8nSettingsModal({ n8nUrl, onClose, onSaveUrl }) {
   const [url, setUrl] = useState(n8nUrl || 'http://localhost:5678/webhook/hiring-event');
@@ -19,7 +20,7 @@ export default function N8nSettingsModal({ n8nUrl, onClose, onSaveUrl }) {
       // First save URL
       onSaveUrl(url);
 
-      const res = await fetch('/api/n8n/test', { method: 'POST' });
+      const res = await fetch(getApiUrl('/api/n8n/test'), { method: 'POST' });
       if (!res.ok) throw new Error('Failed to send test payload.');
       const data = await res.json();
 

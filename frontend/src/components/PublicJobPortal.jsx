@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Briefcase, Send, CheckCircle, User, Mail, Phone, MapPin, DollarSign, Clock, FileText, Sparkles, AlertCircle, Lock } from 'lucide-react';
+import { getApiUrl } from '../apiConfig';
 
 export default function PublicJobPortal({ onApplicationSubmitted }) {
   const [formData, setFormData] = useState({
@@ -35,7 +36,7 @@ export default function PublicJobPortal({ onApplicationSubmitted }) {
     const urlToken = urlParams.get('token');
     if (urlToken) {
       setToken(urlToken);
-      fetch(`/api/links/validate?token=${encodeURIComponent(urlToken)}`)
+      fetch(getApiUrl(`/api/links/validate?token=${encodeURIComponent(urlToken)}`))
         .then(res => res.json())
         .then(data => {
           if (!data.valid) {
@@ -88,7 +89,7 @@ export default function PublicJobPortal({ onApplicationSubmitted }) {
       const payload = { ...formData };
       if (token) payload.token = token;
 
-      const response = await fetch('/api/applications', {
+      const response = await fetch(getApiUrl('/api/applications'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)

@@ -3,6 +3,7 @@ import Dashboard from './components/Dashboard';
 import PublicJobPortal from './components/PublicJobPortal';
 import CandidateModal from './components/CandidateModal';
 import { Briefcase, LayoutDashboard, UserPlus, Sun, Moon } from 'lucide-react';
+import { getApiUrl } from './apiConfig';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -36,8 +37,8 @@ export default function App() {
       if (departmentFilter !== 'All') queryParams.append('department', departmentFilter);
 
       const [appRes, statsRes] = await Promise.all([
-        fetch(`/api/applications?${queryParams.toString()}`),
-        fetch('/api/stats')
+        fetch(getApiUrl(`/api/applications?${queryParams.toString()}`)),
+        fetch(getApiUrl('/api/stats'))
       ]);
 
       if (!appRes.ok || !statsRes.ok) {
@@ -69,7 +70,7 @@ export default function App() {
 
   const handleUpdateStatus = async (id, updateData) => {
     try {
-      const response = await fetch(`/api/applications/${id}`, {
+      const response = await fetch(getApiUrl(`/api/applications/${id}`), {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updateData)
@@ -91,7 +92,7 @@ export default function App() {
 
   const handleDeleteCandidate = async (id) => {
     try {
-      const response = await fetch(`/api/applications/${id}`, {
+      const response = await fetch(getApiUrl(`/api/applications/${id}`), {
         method: 'DELETE'
       });
 
