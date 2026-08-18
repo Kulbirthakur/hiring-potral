@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Briefcase, Send, CheckCircle, User, Mail, Phone, MapPin, DollarSign, Clock, FileText, Sparkles, AlertCircle, Lock } from 'lucide-react';
-import { getApiUrl, sanitizeError } from '../apiConfig';
+import { getApiUrl, sanitizeError, fetchJsonWithRetry } from '../apiConfig';
 
 export default function PublicJobPortal({ onApplicationSubmitted }) {
   const [formData, setFormData] = useState({
@@ -36,8 +36,7 @@ export default function PublicJobPortal({ onApplicationSubmitted }) {
     const urlToken = urlParams.get('token');
     if (urlToken) {
       setToken(urlToken);
-      fetch(getApiUrl(`/api/links/validate?token=${encodeURIComponent(urlToken)}`))
-        .then(res => res.json())
+      fetchJsonWithRetry(getApiUrl(`/api/links/validate?token=${encodeURIComponent(urlToken)}`))
         .then(data => {
           if (!data.valid) {
             setTokenStatus({ isValidating: false, isValid: false, reason: data.reason });
