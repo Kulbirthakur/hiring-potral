@@ -3,7 +3,7 @@ import Dashboard from './components/Dashboard';
 import PublicJobPortal from './components/PublicJobPortal';
 import CandidateModal from './components/CandidateModal';
 import { Briefcase, LayoutDashboard, UserPlus, Sun, Moon } from 'lucide-react';
-import { getApiUrl } from './apiConfig';
+import { getApiUrl, fetchJsonWithRetry } from './apiConfig';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -36,30 +36,16 @@ export default function App() {
       if (statusFilter !== 'All') queryParams.append('status', statusFilter);
       if (departmentFilter !== 'All') queryParams.append('department', departmentFilter);
 
-      const [appRes, statsRes] = await Promise.all([
-        fetch(getApiUrl(`/api/applications?${queryParams.toString()}`)),
-        fetch(getApiUrl('/api/stats'))
+      const [appData, statsData] = await Promise.all([
+        fetchJsonWithRetry(getApiUrl(`/api/applications?${queryParams.toString()}`)),
+        fetchJsonWithRetry(getApiUrl('/api/stats'))
       ]);
-
-      const appContentType = appRes.headers.get('content-type') || '';
-      const statsContentType = statsRes.headers.get('content-type') || '';
-
-      if (!appContentType.includes('application/json') || !statsContentType.includes('application/json')) {
-        throw new Error('Backend API URL (VITE_API_URL) is not linked yet or Render backend is building. Please enter your Render Backend URL in Vercel Environment Variables.');
-      }
-
-      if (!appRes.ok || !statsRes.ok) {
-        throw new Error('Failed to connect to Node.js backend & PostgreSQL database.');
-      }
-
-      const appData = await appRes.json();
-      const statsData = await statsRes.json();
 
       setApplications(appData);
       setStats(statsData);
     } catch (err) {
       console.error('Fetch error:', err);
-      setError(err.message);
+      setError(err.message || 'Server waking up from sleep. Please click Retry.');
     } finally {
       setLoading(false);
     }
