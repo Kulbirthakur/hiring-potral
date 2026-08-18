@@ -3,7 +3,7 @@ import Dashboard from './components/Dashboard';
 import PublicJobPortal from './components/PublicJobPortal';
 import CandidateModal from './components/CandidateModal';
 import { Briefcase, LayoutDashboard, UserPlus, Sun, Moon } from 'lucide-react';
-import { getApiUrl, fetchJsonWithRetry } from './apiConfig';
+import { getApiUrl, fetchJsonWithRetry, sanitizeError } from './apiConfig';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -45,7 +45,7 @@ export default function App() {
       setStats(statsData);
     } catch (err) {
       console.error('Fetch error:', err);
-      setError(err.message || 'Server waking up from sleep. Please click Retry.');
+      setError(sanitizeError(err));
     } finally {
       setLoading(false);
     }

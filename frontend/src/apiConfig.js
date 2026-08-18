@@ -9,6 +9,24 @@ export const getApiUrl = (path) => {
   return API_BASE_URL ? `${API_BASE_URL}${cleanPath}` : cleanPath;
 };
 
+// Helper to sanitize any technical JavaScript error text away from end users
+export const sanitizeError = (err) => {
+  const msg = typeof err === 'string' ? err : (err?.message || '');
+  if (
+    !msg ||
+    msg.includes('doctype') ||
+    msg.includes('Unexpected token') ||
+    msg.includes('json') ||
+    msg.includes('Response') ||
+    msg.includes('SyntaxError') ||
+    msg.includes('TypeError') ||
+    msg.includes('<')
+  ) {
+    return 'Connecting to cloud database server... Please wait a moment.';
+  }
+  return msg;
+};
+
 // Robust fetch helper with auto-retry for Render free tier cold starts
 export const fetchJsonWithRetry = async (url, options = {}, maxRetries = 3, delayMs = 2500) => {
   let lastError;
@@ -29,12 +47,12 @@ export const fetchJsonWithRetry = async (url, options = {}, maxRetries = 3, dela
           await new Promise(r => setTimeout(r, delayMs));
           continue;
         }
-        throw new Error('Server starting up. Please click Retry in a few seconds.');
+        throw new Error('Connecting to cloud database server... Please wait a moment.');
       }
 
       if (!response.ok) {
         const errJson = await response.json().catch(() => ({}));
-        throw new Error(errJson.error || `HTTP ${response.status} error.`);
+        throw new Error(errJson.error || 'Connecting to cloud database server... Please wait a moment.');
       }
 
       return await response.json();
@@ -45,5 +63,5 @@ export const fetchJsonWithRetry = async (url, options = {}, maxRetries = 3, dela
       }
     }
   }
-  throw lastError || new Error('Failed to connect to backend server.');
+  throw new Error('Connecting to cloud database server... Please wait a moment.');
 };

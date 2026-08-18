@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Briefcase, Send, CheckCircle, User, Mail, Phone, MapPin, DollarSign, Clock, FileText, Sparkles, AlertCircle, Lock } from 'lucide-react';
-import { getApiUrl } from '../apiConfig';
+import { getApiUrl, sanitizeError } from '../apiConfig';
 
 export default function PublicJobPortal({ onApplicationSubmitted }) {
   const [formData, setFormData] = useState({
@@ -104,7 +104,7 @@ export default function PublicJobPortal({ onApplicationSubmitted }) {
       setSubmitted(true);
       if (onApplicationSubmitted) onApplicationSubmitted(newApp);
     } catch (err) {
-      setErrorMessage(err.message);
+      setErrorMessage(sanitizeError(err));
     } finally {
       setIsSubmitting(false);
     }
