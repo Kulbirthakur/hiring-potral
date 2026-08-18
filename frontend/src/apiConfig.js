@@ -1,12 +1,16 @@
 // Centralized API Base URL configuration for local dev and production deployment
+const rawEnvUrl = (import.meta.env.VITE_API_URL || '').trim();
+
+// Force live Render backend URL if VITE_API_URL is empty, '/', or invalid
 export const API_BASE_URL = (
-  import.meta.env.VITE_API_URL ||
-  'https://hiring-portal-backend-z90d.onrender.com'
+  !rawEnvUrl || rawEnvUrl === '/' || rawEnvUrl.includes('localhost')
+    ? 'https://hiring-portal-backend-z90d.onrender.com'
+    : rawEnvUrl
 ).replace(/\/$/, '');
 
 export const getApiUrl = (path) => {
   const cleanPath = path.startsWith('/') ? path : `/${path}`;
-  return API_BASE_URL ? `${API_BASE_URL}${cleanPath}` : cleanPath;
+  return `${API_BASE_URL}${cleanPath}`;
 };
 
 // Helper to sanitize any technical JavaScript error text away from end users
