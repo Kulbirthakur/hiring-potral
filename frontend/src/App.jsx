@@ -41,6 +41,13 @@ export default function App() {
         fetch(getApiUrl('/api/stats'))
       ]);
 
+      const appContentType = appRes.headers.get('content-type') || '';
+      const statsContentType = statsRes.headers.get('content-type') || '';
+
+      if (!appContentType.includes('application/json') || !statsContentType.includes('application/json')) {
+        throw new Error('Backend API URL (VITE_API_URL) is not linked yet or Render backend is building. Please enter your Render Backend URL in Vercel Environment Variables.');
+      }
+
       if (!appRes.ok || !statsRes.ok) {
         throw new Error('Failed to connect to Node.js backend & PostgreSQL database.');
       }
