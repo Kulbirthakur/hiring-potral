@@ -55,6 +55,15 @@ export default function App() {
     fetchApplications();
   }, [searchTerm, statusFilter, departmentFilter]);
 
+  // Automatic poller to resolve Render free-tier cold starts
+  useEffect(() => {
+    if (!error) return;
+    const interval = setInterval(() => {
+      fetchApplications();
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [error]);
+
   const toggleTheme = () => {
     const nextTheme = theme === 'dark' ? 'light' : 'dark';
     setTheme(nextTheme);
@@ -186,13 +195,13 @@ export default function App() {
       <main style={{ flex: 1, padding: '0 1.5rem 2rem 1.5rem', maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
         {error && (
           <div style={{
-            padding: '1rem 1.5rem', background: 'rgba(239, 68, 68, 0.15)',
-            border: '1px solid rgba(239, 68, 68, 0.3)', color: '#f87171',
+            padding: '1rem 1.5rem', background: 'rgba(99, 102, 241, 0.15)',
+            border: '1px solid rgba(99, 102, 241, 0.4)', color: '#a5b4fc',
             borderRadius: 'var(--radius-md)', marginBottom: '1.5rem', fontWeight: 500,
             display: 'flex', justifyContent: 'space-between', alignItems: 'center'
           }}>
-            <span>⚠️ {error}</span>
-            <button onClick={fetchApplications} className="btn-secondary" style={{ padding: '0.35rem 0.75rem', fontSize: '0.85rem' }}>Retry</button>
+            <span>⏳ Connecting to cloud database server (waking up free tier server)...</span>
+            <button onClick={fetchApplications} className="btn-secondary" style={{ padding: '0.35rem 0.75rem', fontSize: '0.85rem' }}>Retry Now</button>
           </div>
         )}
 
