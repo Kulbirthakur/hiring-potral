@@ -27,13 +27,13 @@ export const sanitizeError = (err) => {
   return msg;
 };
 
-// Robust fetch helper with auto-retry for Render free tier cold starts
-export const fetchJsonWithRetry = async (url, options = {}, maxRetries = 3, delayMs = 2500) => {
+// Robust fetch helper with 6 auto-retries (30s window) for Render free tier cold starts
+export const fetchJsonWithRetry = async (url, options = {}, maxRetries = 6, delayMs = 3000) => {
   let lastError;
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 20000); // 20s timeout per attempt
+      const timeoutId = setTimeout(() => controller.abort(), 25000); // 25s timeout per attempt
 
       const response = await fetch(url, {
         ...options,
