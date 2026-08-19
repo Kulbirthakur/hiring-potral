@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Lock, User, Key, Eye, EyeOff, LogIn, ShieldAlert } from 'lucide-react';
 
 export default function LoginModal({ onLoginSuccess }) {
-  const [username, setUsername] = useState('admin');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -29,7 +29,7 @@ export default function LoginModal({ onLoginSuccess }) {
       onLoginSuccess('admin', sessionToken);
       setIsLoading(false);
     } else {
-      setError('Invalid username or password. Default is admin / password123');
+      setError('Invalid username or password. Please try again.');
       setIsLoading(false);
     }
   };
@@ -96,13 +96,14 @@ export default function LoginModal({ onLoginSuccess }) {
                 type="text" 
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="Username (admin)" 
+                placeholder="Enter username" 
                 style={{
                   width: '100%', padding: '0.75rem 1rem 0.75rem 2.75rem',
                   background: '#0f172a', border: '1px solid #334155', borderRadius: '10px',
                   color: '#ffffff', fontSize: '0.95rem', outline: 'none'
                 }}
                 required
+                autoComplete="off"
               />
             </div>
           </div>
@@ -118,13 +119,14 @@ export default function LoginModal({ onLoginSuccess }) {
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Password (password123)" 
+                placeholder="Enter password" 
                 style={{
                   width: '100%', padding: '0.75rem 2.75rem 0.75rem 2.75rem',
                   background: '#0f172a', border: '1px solid #334155', borderRadius: '10px',
                   color: '#ffffff', fontSize: '0.95rem', outline: 'none'
                 }}
                 required
+                autoComplete="new-password"
               />
               <button 
                 type="button" 
@@ -134,15 +136,6 @@ export default function LoginModal({ onLoginSuccess }) {
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
-          </div>
-
-          {/* Default Credentials Hint */}
-          <div style={{
-            padding: '0.75rem', background: 'rgba(99, 102, 241, 0.15)',
-            border: '1px solid rgba(99, 102, 241, 0.3)', borderRadius: '8px',
-            fontSize: '0.825rem', color: '#a5b4fc', textAlign: 'center'
-          }}>
-            🔑 Default Credentials: Username <strong style={{ color: '#fff' }}>admin</strong> | Password <strong style={{ color: '#fff' }}>password123</strong>
           </div>
 
           <button 
