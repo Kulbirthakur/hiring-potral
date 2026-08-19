@@ -8,12 +8,34 @@ import { Briefcase, LayoutDashboard, UserPlus, Sun, Moon, Key, LogOut } from 'lu
 import { getApiUrl, fetchJsonWithRetry, sanitizeError } from './apiConfig';
 
 export default function App() {
+  // ALL STATE HOOK DECLARATIONS AT VERY TOP
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     return Boolean(localStorage.getItem('hirepulse_auth_token'));
   });
   const [currentUser, setCurrentUser] = useState(() => {
     return localStorage.getItem('hirepulse_auth_user') || 'admin';
   });
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [theme, setTheme] = useState('dark');
+  const [applications, setApplications] = useState([]);
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [selectedCandidate, setSelectedCandidate] = useState(null);
+  const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
+  const [generatedLink, setGeneratedLink] = useState('');
+  const [isGeneratingLink, setIsGeneratingLink] = useState(false);
+
+  // Filters
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All');
+  const [departmentFilter, setDepartmentFilter] = useState('All');
+
+  // Check if URL is public applicant view (/apply or ?view=apply or #apply)
+  const isPublicOnly = 
+    window.location.pathname.includes('/apply') || 
+    window.location.search.includes('view=apply') || 
+    window.location.hash.includes('apply');
 
   const handleLogout = () => {
     localStorage.removeItem('hirepulse_auth_token');
@@ -35,17 +57,6 @@ export default function App() {
     }
   };
 
-  // Check if URL is public applicant view (/apply or ?view=apply or #apply)
-  const isPublicOnly = 
-    window.location.pathname.includes('/apply') || 
-    window.location.search.includes('view=apply') || 
-    window.location.hash.includes('apply');
-
-  // Filters
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('All');
-  const [departmentFilter, setDepartmentFilter] = useState('All');
-
   const fetchApplications = async () => {
     if (isPublicOnly) return; // Don't fetch admin dashboard data if applicant view
 
@@ -62,8 +73,8 @@ export default function App() {
         fetchJsonWithRetry(getApiUrl('/api/stats'))
       ]);
 
-      setApplications(appData);
-      setStats(statsData);
+      setApplications(appData || []);
+      setStats(statsData || null);
     } catch (err) {
       console.error('Fetch error:', err);
       setError(sanitizeError(err));
@@ -108,12 +119,13 @@ export default function App() {
       }
       fetchApplications();
     } catch (err) {
-      console.error('Update error:', err);
-      alert('Failed to update status.');
+      alert(sanitizeError(err));
     }
   };
 
   const handleDeleteCandidate = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this candidate application?')) return;
+
     try {
       const response = await fetch(getApiUrl(`/api/applications/${id}`), {
         method: 'DELETE'
@@ -122,19 +134,18 @@ export default function App() {
       if (!response.ok) throw new Error('Failed to delete application');
 
       setApplications(prev => prev.filter(item => item.application_id !== id));
+      setSelectedCandidate(null);
       fetchApplications();
     } catch (err) {
-      console.error('Delete error:', err);
-      alert('Failed to delete candidate.');
+      alert(sanitizeError(err));
     }
   };
 
-  // IF PUBLIC CANDIDATE ONLY MODE (/apply or ?view=apply)
+  // IF PUBLIC APPLICANT ONLY VIEW
   if (isPublicOnly) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', padding: '2rem 1rem' }}>
-        {/* Simple Candidate Header */}
-        <div style={{ maxWidth: '800px', margin: '0 auto 1.5rem auto', width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ minHeight: '100vh', background: 'var(--bg-main)', color: 'var(--text-primary)', padding: '2rem 1.5rem' }}>
+        <div style={{ maxWidth: '800px', margin: '0 auto 1.5rem auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <div style={{
               width: '36px', height: '36px', borderRadius: 'var(--radius-md)',
@@ -156,7 +167,7 @@ export default function App() {
   }
 
   // IF NOT AUTHENTICATED AND NOT APPLICANT VIEW, SHOW LOGIN SCREEN
-  if (!isAuthenticated && !isPublicOnly) {
+  if (!isAuthenticated) {
     return (
       <LoginModal 
         onLoginSuccess={(user, token) => {
