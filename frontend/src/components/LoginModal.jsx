@@ -22,7 +22,6 @@ export default function LoginModal({ onLoginSuccess }) {
 
     setIsLoading(true);
 
-    // Instant local authentication check for 100% reliability
     if (cleanUser === 'admin' && cleanPass === 'password123') {
       const sessionToken = 'hirepulse_admin_authenticated_session_2026';
       localStorage.setItem('hirepulse_auth_token', sessionToken);
@@ -37,37 +36,47 @@ export default function LoginModal({ onLoginSuccess }) {
 
   return (
     <div style={{
-      position: 'fixed', inset: 0, zIndex: 9999,
-      background: 'rgba(15, 23, 42, 0.94)', backdropFilter: 'blur(12px)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem'
-    }} className="animate-fade-in">
-      <div className="glass-panel" style={{
-        maxWidth: '440px', width: '100%', borderRadius: 'var(--radius-lg)',
-        padding: '2.5rem 2rem', border: '1px solid rgba(99, 102, 241, 0.4)',
-        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7)'
+      minHeight: '100vh',
+      width: '100%',
+      background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '2rem 1rem'
+    }}>
+      <div style={{
+        maxWidth: '460px',
+        width: '100%',
+        background: '#1e293b',
+        borderRadius: '16px',
+        padding: '2.5rem 2rem',
+        border: '1px solid rgba(99, 102, 241, 0.4)',
+        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7)',
+        color: '#f8fafc'
       }}>
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
           <div style={{
             width: '64px', height: '64px', borderRadius: '50%',
-            background: 'var(--accent-gradient)', display: 'flex', alignItems: 'center',
-            justifyContent: 'center', margin: '0 auto 1.25rem auto', boxShadow: 'var(--accent-glow)'
+            background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            margin: '0 auto 1.25rem auto', boxShadow: '0 0 25px rgba(99, 102, 241, 0.4)'
           }}>
             <Lock size={30} color="#fff" />
           </div>
-          <h2 style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.35rem' }}>
+          <h2 style={{ fontSize: '1.85rem', fontWeight: 800, color: '#ffffff', marginBottom: '0.35rem' }}>
             Recruiter Login
           </h2>
-          <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+          <p style={{ fontSize: '0.9rem', color: '#94a3b8' }}>
             Enter your credentials to access the HirePulse Management Suite.
           </p>
         </div>
 
         {error && (
           <div style={{
-            padding: '0.85rem 1rem', background: 'rgba(239, 68, 68, 0.15)',
-            border: '1px solid rgba(239, 68, 68, 0.3)', color: '#f87171',
-            borderRadius: 'var(--radius-md)', marginBottom: '1.5rem',
+            padding: '0.85rem 1rem', background: 'rgba(239, 68, 68, 0.2)',
+            border: '1px solid rgba(239, 68, 68, 0.4)', color: '#fca5a5',
+            borderRadius: '10px', marginBottom: '1.5rem',
             fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem'
           }}>
             <ShieldAlert size={18} style={{ flexShrink: 0 }} />
@@ -78,18 +87,21 @@ export default function LoginModal({ onLoginSuccess }) {
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           {/* Username */}
           <div>
-            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '0.5rem', color: '#cbd5e1' }}>
               Username
             </label>
             <div style={{ position: 'relative' }}>
-              <User size={18} color="var(--text-muted)" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />
+              <User size={18} color="#94a3b8" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />
               <input 
                 type="text" 
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="Enter username (default: admin)" 
-                className="input-field"
-                style={{ paddingLeft: '2.75rem' }}
+                placeholder="Username (admin)" 
+                style={{
+                  width: '100%', padding: '0.75rem 1rem 0.75rem 2.75rem',
+                  background: '#0f172a', border: '1px solid #334155', borderRadius: '10px',
+                  color: '#ffffff', fontSize: '0.95rem', outline: 'none'
+                }}
                 required
               />
             </div>
@@ -97,24 +109,27 @@ export default function LoginModal({ onLoginSuccess }) {
 
           {/* Password */}
           <div>
-            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '0.5rem', color: '#cbd5e1' }}>
               Password
             </label>
             <div style={{ position: 'relative' }}>
-              <Key size={18} color="var(--text-muted)" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />
+              <Key size={18} color="#94a3b8" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />
               <input 
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter password (default: password123)" 
-                className="input-field"
-                style={{ paddingLeft: '2.75rem', paddingRight: '2.75rem' }}
+                placeholder="Password (password123)" 
+                style={{
+                  width: '100%', padding: '0.75rem 2.75rem 0.75rem 2.75rem',
+                  background: '#0f172a', border: '1px solid #334155', borderRadius: '10px',
+                  color: '#ffffff', fontSize: '0.95rem', outline: 'none'
+                }}
                 required
               />
               <button 
                 type="button" 
                 onClick={() => setShowPassword(!showPassword)}
-                style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
+                style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}
               >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
@@ -123,18 +138,23 @@ export default function LoginModal({ onLoginSuccess }) {
 
           {/* Default Credentials Hint */}
           <div style={{
-            padding: '0.75rem', background: 'rgba(99, 102, 241, 0.08)',
-            border: '1px solid rgba(99, 102, 241, 0.2)', borderRadius: 'var(--radius-sm)',
-            fontSize: '0.8rem', color: '#a5b4fc', textAlign: 'center'
+            padding: '0.75rem', background: 'rgba(99, 102, 241, 0.15)',
+            border: '1px solid rgba(99, 102, 241, 0.3)', borderRadius: '8px',
+            fontSize: '0.825rem', color: '#a5b4fc', textAlign: 'center'
           }}>
-            🔑 Default Credentials: Username <strong>admin</strong> | Password <strong>password123</strong>
+            🔑 Default Credentials: Username <strong style={{ color: '#fff' }}>admin</strong> | Password <strong style={{ color: '#fff' }}>password123</strong>
           </div>
 
           <button 
             type="submit" 
             disabled={isLoading}
-            className="btn-primary" 
-            style={{ width: '100%', justifyContent: 'center', padding: '0.85rem', fontSize: '1rem', fontWeight: 700, marginTop: '0.5rem' }}
+            style={{
+              width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
+              padding: '0.85rem', fontSize: '1rem', fontWeight: 700, marginTop: '0.5rem',
+              background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+              color: '#ffffff', border: 'none', borderRadius: '10px', cursor: 'pointer',
+              boxShadow: '0 4px 14px rgba(99, 102, 241, 0.4)'
+            }}
           >
             {isLoading ? 'Authenticating...' : <><LogIn size={18} /> Sign In to Dashboard</>}
           </button>
