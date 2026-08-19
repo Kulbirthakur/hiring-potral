@@ -3,20 +3,23 @@ import Dashboard from './components/Dashboard';
 import PublicJobPortal from './components/PublicJobPortal';
 import CandidateModal from './components/CandidateModal';
 import LinkGeneratorModal from './components/LinkGeneratorModal';
-import { Briefcase, LayoutDashboard, UserPlus, Sun, Moon, Key } from 'lucide-react';
+import LoginModal from './components/LoginModal';
+import { Briefcase, LayoutDashboard, UserPlus, Sun, Moon, Key, LogOut } from 'lucide-react';
 import { getApiUrl, fetchJsonWithRetry, sanitizeError } from './apiConfig';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('dashboard');
-  const [theme, setTheme] = useState('dark');
-  const [applications, setApplications] = useState([]);
-  const [stats, setStats] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [selectedCandidate, setSelectedCandidate] = useState(null);
-  const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
-  const [generatedLink, setGeneratedLink] = useState('');
-  const [isGeneratingLink, setIsGeneratingLink] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return Boolean(localStorage.getItem('hirepulse_auth_token'));
+  });
+  const [currentUser, setCurrentUser] = useState(() => {
+    return localStorage.getItem('hirepulse_auth_user') || 'admin';
+  });
+
+  const handleLogout = () => {
+    localStorage.removeItem('hirepulse_auth_token');
+    localStorage.removeItem('hirepulse_auth_user');
+    setIsAuthenticated(false);
+  };
 
   const handleGenerateLink = async () => {
     setIsGeneratingLink(true);
@@ -152,6 +155,18 @@ export default function App() {
     );
   }
 
+  // IF NOT AUTHENTICATED AND NOT APPLICANT VIEW, SHOW LOGIN SCREEN
+  if (!isAuthenticated && !isPublicOnly) {
+    return (
+      <LoginModal 
+        onLoginSuccess={(user, token) => {
+          setCurrentUser(user);
+          setIsAuthenticated(true);
+        }} 
+      />
+    );
+  }
+
   // RECRUITER / ADMIN FULL MODE
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -215,6 +230,14 @@ export default function App() {
           </button>
           <button onClick={toggleTheme} className="btn-secondary" style={{ padding: '0.5rem 0.85rem' }} title="Toggle Theme">
             {theme === 'dark' ? <Sun size={18} color="#fbbf24" /> : <Moon size={18} color="#6366f1" />}
+          </button>
+          <button 
+            onClick={handleLogout} 
+            className="btn-secondary" 
+            style={{ padding: '0.5rem 0.85rem', color: '#f87171', borderColor: 'rgba(239, 68, 68, 0.3)', display: 'flex', alignItems: 'center', gap: '0.35rem' }} 
+            title="Sign Out"
+          >
+            <LogOut size={16} /> Logout
           </button>
         </div>
       </header>

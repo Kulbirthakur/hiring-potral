@@ -45,6 +45,27 @@ app.get('/api/health', async (req, res) => {
   }
 });
 
+// RECRUITER AUTHENTICATION LOGIN ENDPOINT
+app.post('/api/auth/login', (req, res) => {
+  const { username, password } = req.body;
+  const expectedUser = (process.env.ADMIN_USERNAME || 'admin').trim();
+  const expectedPass = (process.env.ADMIN_PASSWORD || 'password123').trim();
+
+  if (username && username.trim() === expectedUser && password && password.trim() === expectedPass) {
+    const sessionToken = crypto.createHash('sha256').update(`${expectedUser}:${expectedPass}:secret_salt_2026`).digest('hex');
+    return res.json({
+      success: true,
+      token: sessionToken,
+      username: expectedUser
+    });
+  }
+
+  return res.status(401).json({
+    success: false,
+    error: 'Invalid username or password. Please try again.'
+  });
+});
+
 // GENERATE ONE-TIME SINGLE-USE APPLICATION LINK
 app.post('/api/links/generate', async (req, res) => {
   try {
