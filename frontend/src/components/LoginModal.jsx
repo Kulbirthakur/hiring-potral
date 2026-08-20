@@ -239,18 +239,16 @@ export default function LoginModal({ onLoginSuccess }) {
                   type="password" 
                   value={masterKey}
                   onChange={(e) => setMasterKey(e.target.value)}
-                  placeholder="Master Key (OWNER2026)" 
+                  placeholder="Enter Master Security Key" 
                   style={{
                     width: '100%', padding: '0.75rem 1rem 0.75rem 2.75rem',
                     background: '#0f172a', border: '1px solid #334155', borderRadius: '10px',
                     color: '#ffffff', fontSize: '0.95rem', outline: 'none'
                   }}
                   required
+                  autoComplete="off"
                 />
               </div>
-              <span style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.25rem', display: 'block' }}>
-                🔑 Default Master Passcode: <strong>OWNER2026</strong>
-              </span>
             </div>
 
             {/* New Password */}
