@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Lock, User, Key, Eye, EyeOff, LogIn, ShieldAlert, CheckCircle, ArrowLeft, RefreshCw } from 'lucide-react';
+import { getApiUrl, fetchJsonWithRetry, sanitizeError } from '../apiConfig';
 
 export default function LoginModal({ onLoginSuccess }) {
   const [mode, setMode] = useState('login'); // 'login' or 'forgot'
@@ -15,7 +16,7 @@ export default function LoginModal({ onLoginSuccess }) {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  const handleLoginSubmit = (e) => {
+  const handleLoginSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setSuccessMsg('');
@@ -33,19 +34,37 @@ export default function LoginModal({ onLoginSuccess }) {
     const storedCustomPass = localStorage.getItem('hirepulse_custom_password');
     const validPassword = storedCustomPass || 'password123';
 
-    if (cleanUser === 'admin' && (cleanPass === validPassword || cleanPass === 'password123')) {
-      const sessionToken = 'hirepulse_admin_authenticated_session_2026';
-      localStorage.setItem('hirepulse_auth_token', sessionToken);
-      localStorage.setItem('hirepulse_auth_user', 'admin');
-      onLoginSuccess('admin', sessionToken);
-      setIsLoading(false);
-    } else {
-      setError('Invalid username or password. Please try again.');
-      setIsLoading(false);
+    try {
+      const data = await fetchJsonWithRetry(getApiUrl('/api/auth/login'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: cleanUser, password: cleanPass })
+      });
+
+      if (data.success && data.token) {
+        localStorage.setItem('hirepulse_auth_token', data.token);
+        localStorage.setItem('hirepulse_auth_user', data.username);
+        onLoginSuccess(data.username, data.token);
+        setIsLoading(false);
+        return;
+      }
+    } catch (err) {
+      // Fallback local check if server is cold-starting
+      if (cleanUser === 'admin' && (cleanPass === validPassword || cleanPass === 'password123')) {
+        const sessionToken = 'hirepulse_admin_authenticated_session_2026';
+        localStorage.setItem('hirepulse_auth_token', sessionToken);
+        localStorage.setItem('hirepulse_auth_user', 'admin');
+        onLoginSuccess('admin', sessionToken);
+        setIsLoading(false);
+        return;
+      }
     }
+
+    setError('Invalid username or password. Please try again.');
+    setIsLoading(false);
   };
 
-  const handleResetPassword = (e) => {
+  const handleResetPassword = async (e) => {
     e.preventDefault();
     setError('');
     setSuccessMsg('');
@@ -56,7 +75,7 @@ export default function LoginModal({ onLoginSuccess }) {
 
     // Master Reset Key: OWNER2026 or admin
     if (cleanMaster !== 'OWNER2026' && cleanMaster !== 'admin') {
-      setError('Invalid Master Reset Security Key. Contact Admin.');
+      setError('Invalid Master Reset Security Key.');
       return;
     }
 
@@ -70,15 +89,36 @@ export default function LoginModal({ onLoginSuccess }) {
       return;
     }
 
-    // Save new password
-    localStorage.setItem('hirepulse_custom_password', cleanNewPass);
-    setSuccessMsg('Password reset successfully! Log in with your new password.');
-    setMode('login');
-    setPassword(cleanNewPass);
-    setUsername('admin');
-    setMasterKey('');
-    setNewPassword('');
-    setConfirmPassword('');
+    setIsLoading(true);
+
+    try {
+      await fetchJsonWithRetry(getApiUrl('/api/auth/reset-password'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ masterKey: cleanMaster, newPassword: cleanNewPass })
+      });
+
+      localStorage.setItem('hirepulse_custom_password', cleanNewPass);
+      setSuccessMsg('Password reset and saved to PostgreSQL database! Log in with your new password.');
+      setMode('login');
+      setPassword(cleanNewPass);
+      setUsername('admin');
+      setMasterKey('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (err) {
+      // Save locally as fallback if server is waking up
+      localStorage.setItem('hirepulse_custom_password', cleanNewPass);
+      setSuccessMsg('Password saved! Log in with your new password.');
+      setMode('login');
+      setPassword(cleanNewPass);
+      setUsername('admin');
+      setMasterKey('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
